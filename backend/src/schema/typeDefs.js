@@ -54,6 +54,7 @@ const typeDefs = `
         amount: Float!
         project: Project!
         createdBy: User!
+        createdById: ID!
         createdAt: DateTime!
     }
 
@@ -65,6 +66,7 @@ const typeDefs = `
         amount: Float!
         project: Project!
         createdBy: User!
+        createdById: ID!
         createdAt: DateTime!
     }
 

@@ -25,9 +25,6 @@ import AddIcon from "@mui/icons-material/Add";
 import FolderIcon from "@mui/icons-material/Folder";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import CheckIcon from "@mui/icons-material/Check";
-import ClearIcon from "@mui/icons-material/Clear";
-import EmailIcon from "@mui/icons-material/Email";
 
 import { API_URL } from "../../api/api";
 import { useNavigate } from "react-router-dom";
@@ -37,17 +34,6 @@ type Project = {
   name: string;
   location: string;
   creator: { id: string };
-};
-
-type UserInvitation = {
-  id: string;
-  email: string;
-  status: "PENDING" | "ACCEPTED" | "REJECTED";
-  project: {
-    id: string;
-    name: string;
-    location: string;
-  };
 };
 
 type CurrentUser = {
@@ -70,7 +56,6 @@ const textFieldSx = {
 
 export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [invitations, setInvitations] = useState<UserInvitation[]>([]);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -79,7 +64,6 @@ export default function Dashboard() {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [creating, setCreating] = useState(false);
   const [updating, setUpdating] = useState(false);
-  const [respondingId, setRespondingId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", location: "" });
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const navigate = useNavigate();
@@ -111,16 +95,6 @@ export default function Dashboard() {
                   id
                 }
               }
-              myInvitations {
-                id
-                email
-                status
-                project {
-                  id
-                  name
-                  location
-                }
-              }
             }
           `,
         },
@@ -133,7 +107,6 @@ export default function Dashboard() {
 
       setCurrentUser(response.data.data.me);
       setProjects(response.data.data.projects || []);
-      setInvitations(response.data.data.myInvitations || []);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to load dashboard data",
@@ -290,51 +263,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleRespondInvitation = async (
-    invitationId: string,
-    accept: boolean,
-  ) => {
-    try {
-      setRespondingId(invitationId);
-      setActionError("");
-
-      const response = await axios.post(
-        API_URL,
-        {
-          query: `
-            mutation RespondToInvitation($id: ID!, $status: InvitationStatus!) {
-              respondToInvitation(id: $id, status: $status) {
-                id
-                status
-              }
-            }
-          `,
-          variables: {
-            id: invitationId,
-            status: accept ? "ACCEPTED" : "REJECTED",
-          },
-        },
-        { withCredentials: true },
-      );
-
-      if (response.data.errors?.length) {
-        throw new Error(response.data.errors[0].message);
-      }
-
-      await fetchDashboardData();
-    } catch (err) {
-      setActionError(
-        err instanceof Error ? err.message : "Failed to respond to invitation",
-      );
-    } finally {
-      setRespondingId(null);
-    }
-  };
-
-  const pendingInvitations = invitations.filter(
-    (invite) => invite.status === "PENDING",
-  );
-
   const userInitial =
     currentUser?.fullName?.charAt(0)?.toUpperCase() ||
     currentUser?.username?.charAt(0)?.toUpperCase() ||
@@ -459,78 +387,6 @@ export default function Dashboard() {
           <Alert severity="error" sx={{ mb: 3 }} onClose={() => setActionError("")}>
             {actionError}
           </Alert>
-        )}
-
-        {!loading && pendingInvitations.length > 0 && (
-          <Card
-            sx={{
-              mb: 4,
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(139,92,246,0.35)",
-              borderRadius: 4,
-              color: "white",
-            }}
-          >
-            <CardContent>
-              <Stack direction="row" spacing={1.5} alignItems="center" mb={2}>
-                <EmailIcon sx={{ color: "#a78bfa" }} />
-                <Typography variant="h6" fontWeight={700}>
-                  Pending Invitations
-                </Typography>
-              </Stack>
-
-              <Stack spacing={2}>
-                {pendingInvitations.map((invite) => (
-                  <Box
-                    key={invite.id}
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: 2,
-                      p: 2,
-                      borderRadius: 3,
-                      background: "rgba(255,255,255,0.03)",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <Box>
-                      <Typography fontWeight={700}>{invite.project.name}</Typography>
-                      <Typography variant="body2" sx={{ opacity: 0.7 }}>
-                        {invite.project.location}
-                      </Typography>
-                    </Box>
-
-                    <Stack direction="row" spacing={1}>
-                      <IconButton
-                        size="small"
-                        disabled={respondingId === invite.id}
-                        onClick={() => handleRespondInvitation(invite.id, true)}
-                        sx={{
-                          color: "#4ade80",
-                          background: "rgba(74,222,128,0.1)",
-                        }}
-                      >
-                        <CheckIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        disabled={respondingId === invite.id}
-                        onClick={() => handleRespondInvitation(invite.id, false)}
-                        sx={{
-                          color: "#f87171",
-                          background: "rgba(248,113,113,0.1)",
-                        }}
-                      >
-                        <ClearIcon fontSize="small" />
-                      </IconButton>
-                    </Stack>
-                  </Box>
-                ))}
-              </Stack>
-            </CardContent>
-          </Card>
         )}
 
         {!loading && projects.length === 0 && (

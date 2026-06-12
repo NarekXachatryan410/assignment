@@ -69,7 +69,9 @@ type Expense = {
   id: string;
   name: string;
   amount: number;
-  createdById: string;
+  createdBy: {
+    id: string;
+  };
   createdAt: string;
 };
 
@@ -77,7 +79,9 @@ type Income = {
   id: string;
   name: string;
   amount: number;
-  createdById: string;
+  createdBy: {
+    id: string;
+  };
   createdAt: string;
 };
 
@@ -237,7 +241,9 @@ export default function ProjectDetails() {
                   id
                   name
                   amount
-                  createdById
+                  createdBy {
+                    id
+                  }
                   createdAt
                 }
               }
@@ -255,7 +261,9 @@ export default function ProjectDetails() {
                   id
                   name
                   amount
-                  createdById
+                  createdBy {
+                    id
+                  }
                   createdAt
                 }
               }
@@ -545,7 +553,9 @@ export default function ProjectDetails() {
                 id
                 name
                 amount
-                createdById
+                createdBy {
+                  id
+                }
                 createdAt
               }
             }
@@ -598,7 +608,9 @@ export default function ProjectDetails() {
                 id
                 name
                 amount
-                createdById
+                createdBy {
+                  id
+                }
                 createdAt
               }
             }
@@ -687,7 +699,9 @@ export default function ProjectDetails() {
                 id
                 name
                 amount
-                createdById
+                createdBy {
+                  id
+                }
                 createdAt
               }
             }
@@ -740,7 +754,9 @@ export default function ProjectDetails() {
                 id
                 name
                 amount
-                createdById
+                createdBy {
+                  id
+                }
                 createdAt
               }
             }
@@ -835,11 +851,11 @@ export default function ProjectDetails() {
   };
 
   const canEditExpense = (expense: Expense) => {
-    return currentUserId === expense.createdById || isOwner;
+    return currentUserId === expense.createdBy.id || isOwner;
   };
 
   const canEditIncome = (income: Income) => {
-    return currentUserId === income.createdById || isOwner;
+    return currentUserId === income.createdBy.id || isOwner;
   };
 
   return (

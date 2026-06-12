@@ -610,9 +610,15 @@ const resolvers = {
           to: normalizedEmail,
           projectName: project.name,
           inviterName: user.fullName || user.username || "A project owner",
+          invitationId: invitation.id,
         });
       } catch (mailError) {
-        console.warn("Invitation email could not be sent:", mailError.message);
+        await prisma.invitation.delete({
+          where: { id: invitation.id },
+        });
+        throw new GraphQLError(
+          `Invitation was created, but the email could not be sent: ${mailError.message}`,
+        );
       }
 
       return invitation;
@@ -843,13 +849,13 @@ const resolvers = {
         where: { id: parent.projectId },
       });
     },
-    createdById: async (parent) => {
-      return parent.createdById;
-    },
     createdBy: async (parent) => {
       return prisma.user.findUnique({
         where: { id: parent.createdById },
       });
+    },
+    createdById: async (parent) => {
+      return parent.createdById;
     },
   },
 
@@ -859,13 +865,13 @@ const resolvers = {
         where: { id: parent.projectId },
       });
     },
-    createdById: async (parent) => {
-      return parent.createdById;
-    },
     createdBy: async (parent) => {
       return prisma.user.findUnique({
         where: { id: parent.createdById },
       });
+    },
+    createdById: async (parent) => {
+      return parent.createdById;
     },
   },
 
